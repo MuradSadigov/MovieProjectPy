@@ -1,18 +1,8 @@
-from database import Database
-cases = {
-    "l": None,
-    "l -v": None,
-    "l": None,
-    "l": None,
-    "l": None,
-    "l": None,
-    "l": None,
-    "l": None,
-    "l": None,
-    "l": None,
-    "l": None,
-    
-}
+from models.actor import Actor
+from models.movie import Movie
+from database import Tables, db
+# from cli_handler import cli
 
 if __name__ == "__main__":
-    db = Database()
+    db.conn.close()
+    db.cur.close()
