@@ -3,17 +3,9 @@ import psycopg2
 from typing import List, Union
 from psycopg2 import IntegrityError, OperationalError
 from dotenv import load_dotenv
-from enum import Enum
 from models.actor import Actor
 from models.movie import Movie
 from helpers import *
-
-
-class Tables(Enum):
-    movies = "movies"
-    actors = "actors"
-    participation = "participation"
-
 
 class Database:
     conn = None
@@ -32,15 +24,15 @@ class Database:
             )
             self.cur = self.conn.cursor()
 
-            self.create_table(table="movies")
             self.create_table(table="actors")
+            self.create_table(table="movies")
             self.create_table(table="participation")
 
             print("Successful connection!")
         except OperationalError as e:
             print(f"Error: Unable to connect to the database.\n{e}")
 
-    def create_table(self, table: str):
+    def create_table(self, table):
         try:
             self.cur.execute(
                 f"SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '{table}')")
@@ -56,6 +48,45 @@ class Database:
             print(f"Error: {e}")
             self.conn.rollback()
             print("Transaction rolled back.")
+
+    def get_all_data(self, table_name: Tables) -> List[Union[Actor, Movie]]:
+        try:
+            data = []
+            if table_name == Tables.actors:
+                self.cur.execute("SELECT id, name, birth_year FROM actors")
+                rows = self.cur.fetchall()
+                
+                for row in rows:
+                    actor = Actor(*row)
+                    data.append(actor)
+                    
+            elif table_name == Tables.movies:
+                self.cur.execute(
+                    "SELECT id, title, director, release_year, length_min FROM movies")
+                movie_rows = self.cur.fetchall()
+
+                for row in movie_rows:
+                    movie = Movie(*row)
+
+                    self.cur.execute(
+                        f"SELECT actor_id FROM participation WHERE movie_id = {movie.id}")
+
+                    actor_ids = self.cur.fetchall()
+                    actors = []
+                    for id in actor_ids:
+                        self.cur.execute(
+                            "SELECT id, name, birth_year FROM actors WHERE id = %s", (id,))
+                        actor_row = self.cur.fetchone()
+                        actor = Actor(*actor_row)
+                        actors.append(actor)
+
+                    movie.actors = actors
+                    data.append(movie)
+
+            return data
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}. Rolling back changes.")
+            self.conn.rollback()
 
     def add_data(self, table_name: Tables, data: Union[Movie, Actor]):
         try:
@@ -73,10 +104,6 @@ class Database:
                 )
                 movie_id = self.cur.fetchone()[0]
 
-                self.cur.execute(
-                    "SELECT id FROM actors WHERE name = %s", (data.director,))
-                director_id = self.cur.fetchone()[0]
-
                 for actor in data.actors:
                     self.cur.execute(
                         "SELECT id FROM actors WHERE name = %s",
@@ -86,10 +113,9 @@ class Database:
                     actor_ids.append(actor_id)
 
                 for id in actor_ids:
-                    is_director = True if id == director_id else False
                     self.cur.execute(
-                        "INSERT INTO participation (movie_id, actor_id, is_director) VALUES (%s, %s, %s)",
-                        (movie_id, id, is_director)
+                        "INSERT INTO participation (movie_id, actor_id) VALUES (%s, %s)",
+                        (movie_id, id)
                     )
 
             self.conn.commit()
@@ -100,22 +126,56 @@ class Database:
             print(f"An unexpected error occurred: {e}. Rolling back changes.")
             self.conn.rollback()
 
-    def update_data():
-        pass
+    def delete_actor(self, name):
+        if self.actor_exists(name):
+            if not self.is_director(name):
+                try:
+                    self.cur.execute(
+                        "SELECT id FROM actors WHERE name = %s", (name,))
+                    actor_id = self.cur.fetchone()[0]
 
-    def remove_data():
-        pass
+                    self.cur.execute(
+                        "DELETE FROM participation WHERE actor_id = %s", (actor_id,))
 
-    def get_all_data(self, table_name: Tables) -> List[Union[Actor, Movie]]:
-        data = []
-        if table_name == Tables.actors:
-            self.cur.execute("SELECT * FROM actors")
-            rows = self.cur.fetchall()
+                    self.cur.execute(
+                        "DELETE FROM actors WHERE name = %s", (name,))
+                    self.conn.commit()
+                except Exception as e:
+                    print(f"Error deleting actor: {e}")
+                    self.conn.rollback()
+            else:
+                print("Directors can not be deleted.")
+        else:
+            print(f"{name} cannot be found in the database.")
 
-            for row in rows:
-                actor = Actor(*row)
-                data.append(actor)
+    def is_director(self, name):
+        try:
+            self.cur.execute(
+                "SELECT * FROM movies WHERE director = %s", (name,))
+            result = self.cur.fetchall()
+            if result:
+                return True
+            return False
+        except Exception as e:
+            print(f"Error checking is director or actor: {e}")
 
-        return data
+    def actor_exists(self, name):
+        try:
+            self.cur.execute(
+                "SELECT EXISTS (SELECT * FROM actors WHERE name = %s)", (name,))
+            result = self.cur.fetchone()[0]
+            return bool(result)
+        except Exception as e:
+            print(f"Error checking actor existence: {e}")
+
+    def get_actor(self, name):
+        try:
+            self.cur.execute(
+                "SELECT id, name, birth_year FROM actors WHERE name = %s", (name,))
+            result = self.cur.fetchone()
+            return result
+        except Exception as e:
+            print(f"Error getting actor from database: {e}")
+
 
 db = Database()

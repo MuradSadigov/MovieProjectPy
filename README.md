@@ -1,61 +1,85 @@
-NokiaMovieTask
+# Nokia Movie Task
 
-Your task is to create a console application that can list and alter a database of movies, directors and actors. Preferably you should use Python3 or alternatively you can use Java.
-"Database" can be a real relational database on your computer, but can be just a text file, which is parsed and gradually updated, it is up to you.
+## Virtual Environment Setup
 
-We know the following facts about a movie:
-	- Its title
-	- Its director
-	- Its release year
-	- Some of its actors
-	- Its length (given in minutes)
-It is possible to have different movies with the same title, but movies with the same title and same director should be treated as the same.
-An actor can be a director and a director can be an actor. We know the birth year of each actor and director. We can indentify these people with their name.
+### Prerequisites
 
-The console application should meet the following requirements:
+- Python 3.x installed on your system. If not, download and install it from [python.org](https://www.python.org/downloads/).
+- PostgreSQL installed on your system. Download and install it from [PostgreSQL Downloads](https://www.postgresql.org/download/).
 
-On startup it tries to connect to the database and informs the user about its success. In case of failure, terminates the program.
-After successful connection, the program should support the following commands provided on standard input:
+### Setting up a Virtual Environment (venv)
 
-- If the user enters "l" it lists the movies (each on a separate line), following this format:
-<title> by <director> in <year>, <length>
-	- length should be rendered in hh:mm format with leading zeros
-- If the user types "l -v" the entry for a movie will be shown in this format:
-<title> by <director> in <year>, <length>
-	Starring:
-		- <actor1 name> at age <age in years at the release of the film>
-		- <actor2 name> at age <age in years at the release of the film>
-- If the user adds the "-t" switch, after that between quotes a regex can be given to match the title with. Example:
-	l -t "Die .*" -v
-		- That will print Die Hard 1. and Die Hard 2. with its starring
-- The user can also add a -d switch. After that a regex should be given to filter the results by the movie's director
-- We can add an -a switch as well. After that we can give a regex. It should list all of the movies that have at least one actor whose name matches with the regex
--la switch lists the movies with ascending order by their length
--ld switch lists the movies with descending order by their length
-	- By default movies are listed alphabetically by their title. If one of the ordering switches present, the same length movies should be ordered alphabetically by their titles
-- Switches can be in any order. In case of parametrized switches, the parameter should be right after the switch
-- Check and handle any incorrect query format (example: both -la and -ld are present, no parameter after -d, regexes are not quoted or corrupted). Inform user about the bad input format
+1. **Open a terminal or command prompt:**
 
-- If the user enters "a" then they can add new entries to the database
-	- "a -p" allows to add new people. After entering this the user will be prompted to give a name and the year of birth for the person.
-	- "a -m" allows to add new movie. After entering this the user will be prompted to give a title, then give the length in hh:mm format, then name the director, then give the year of release, finally name the actors. Actors are given line by line. When an actor (or the director) is not available in the database, print an error message. Do this until a correct name is entered. In case of actors "exit" is a special value, this will finalize the record and add it to the database.
-	- Output should be something like this:
-		> a -m
-		> Title: Star Wars 1.
-		> Length: 13
-		> - Bad input format (hh:mm), try again!
-		> Length: 02:16
-		> Director: George Luca
-		> - We could not find "George Luca", try again!
-		> George Lucas
-		> Released in: 1999
-		> Starring: Liam Neeson
-		> Ewan McGregor
-		> Natalie Portman
-		> exit
+    - **On Windows:** `cmd` or `powershell`, and press Enter.
+    - **On macOS/Linux:** open the terminal through your preferred method.
 
-- With "d -p" users can delete people from the database. After -p switch, a string should be added. If it is the exact name of a person in the database, deletes them, and also deletes them from every movie they starred in. If they are a director in a movie, then we cannot delete them and the program should notify the user about this. The program should also notify the user if the person cannot be found in the database.
+2. **Navigate to your project directory:**
 
-- Unit tests or at least some relevant test inputs are welcome
-- Try to write self-documenting, well-organized code
-- If the build and run of your code is not trivial, please write a short documentation about it
+    ```bash
+    cd path/to/your/project
+    ```
+
+3. **Create a virtual environment:**
+
+    ```
+    python3 -m venv venv
+    ```
+    or
+    ```
+    py -m venv venv
+    ```
+
+    This will create a virtual environment named `venv` in your project directory.
+
+4. **Activate the virtual environment:**
+
+    - **On Windows:**
+        ```bash
+        .\venv\Scripts\activate
+        ```
+
+    - **On macOS/Linux:**
+        ```bash
+        source venv/bin/activate
+        ```
+
+    You should see `(venv)` in your command prompt or terminal, indicating that the virtual environment is active.
+
+### Installing Dependencies
+
+1. **Ensure your virtual environment is activated.**
+
+2. **Install dependencies using `pip`:**
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+### Deactivating the Virtual Environment
+
+When you're done working on your project, deactivate the virtual environment:
+
+```bash
+deactivate
+```
+### Environmental variables
+1. **Create `.env` file in the `app` directory**
+
+    You can create it manually or: **Run the command below inside of the `app` directory**
+    ```
+    cp .env.example .env
+    ```
+
+
+2. **Edit the `.env` file with your PostgreSQL details:**
+
+    ```
+    DB_NAME="your_database_name"
+    DB_USER="your_database_user"
+    DB_PASSWORD="your_database_password"
+    DB_HOST="your_database_host"
+    DB_PORT="your_database_port"
+  
+    ```
+    Replace the placeholder values with your actual PostgreSQL database details.
