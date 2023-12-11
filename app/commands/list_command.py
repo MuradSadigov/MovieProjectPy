@@ -18,12 +18,10 @@ class ListCommandSwitches(Enum):
                 ListCommandSwitches.DESCENDING.value]
 
 
-class ListCommand:
+class ListCommand():
     def __init__(self):
-        self.actors = []
-        self.movies = []
         self.reset()
-
+        
     def reset(self):
         self.actors = db.get_all_data(Tables.actors)
         self.movies = db.get_all_data(Tables.movies)
@@ -37,15 +35,16 @@ class ListCommand:
         pattern = re.compile(regex)
         self.movies = [
             movie for movie in self.movies if pattern.search(movie.title)]
-        
+
     def director(self, regex):
         pattern = re.compile(regex)
         self.movies = [
             movie for movie in self.movies if pattern.search(movie.director)]
-        
+
     def actor(self, regex):
         pattern = re.compile(regex)
-        self.movies = [movie for movie in self.movies if any(pattern.search(actor.name) for actor in movie.actors)]
+        self.movies = [movie for movie in self.movies if any(
+            pattern.search(actor.name) for actor in movie.actors)]
 
     def ascending(self):
         self.movies = sorted(self.movies, key=lambda movie: movie.length_min)

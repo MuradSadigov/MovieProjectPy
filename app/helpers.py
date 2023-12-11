@@ -1,3 +1,4 @@
+import datetime
 import re
 import os
 from enum import Enum
@@ -35,7 +36,7 @@ def time_format_to_minutes(time_str: str) -> int:
 
 
 def is_valid_year(year: str) -> bool:
-    return year.isdigit() and MIN_YEAR <= int(year)
+    return year.isdigit() and MIN_YEAR <= int(year) <= datetime.datetime.now().year
 
 
 def is_valid_time_format(time_str: str) -> bool:

@@ -2,6 +2,7 @@ from commands.list_command import ListCommand, ListCommandSwitches
 from commands.add_command import AddCommand, AddCommandSwitches
 from commands.delete_command import DeleteCommand, DeleteCommandSwitches
 
+
 class CommandProcessor:
     def __init__(self):
         self.commands = {
@@ -17,15 +18,14 @@ class CommandProcessor:
             command_line_input = input(f"{GREEN}Enter command: {RESET}")
             command, switches = self.parse_command(command_line_input)
             command_obj = self.commands[command]
-
+            command_obj.reset()
             if not command_obj:
                 print(f"Command {command} is not available.")
                 continue
 
             self.execute_command(command_obj, switches)
-            command_obj.reset()
 
-    def parse_command(self, command_line_input):
+    def parse_command(self, command_line_input: str):
         switches = {}
 
         tokens = [

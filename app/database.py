@@ -40,10 +40,6 @@ class Database:
             if not table_exists:
                 self.cur.execute(read_file(table))
                 self.conn.commit()
-                print(f"Table '{table}' created successfully.")
-            else:
-                print(
-                    f"Table '{table}' already exists. Skipped table creation.")
         except Exception as e:
             print(f"Error: {e}")
             self.conn.rollback()

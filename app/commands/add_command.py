@@ -4,16 +4,14 @@ from models.movie import Movie
 from database import db
 from helpers import *
 
-
 class AddCommandSwitches(Enum):
     ADD_ACTOR = "-p"
     ADD_MOVIE = "-m"
 
-
 class AddCommand:
     def __init__(self):
-        pass
-    
+       pass
+   
     def reset(self):
         pass
 
